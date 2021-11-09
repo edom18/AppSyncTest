@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using GraphQL;
@@ -66,17 +67,21 @@ public class HelloWorldButton : MonoBehaviour
 
     public async void OnClick2()
     {
-        var headerStr = @" { ""host"": ""zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com"", ""x-api-key"": ""da2-jdorukduzzdbbgrfubngjzi24a"" }";
+        var domain = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com";
+        var wdomain = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com";
+        var headerStr = JsonConvert.SerializeObject(new Dictionary<string, object>
+        {
+            ["host"] = domain,
+            ["x-api-key"] = API_KEY,
+        });
         var header = Convert.ToBase64String(Encoding.UTF8.GetBytes(headerStr));
-        var graphQLClient = new GraphQLHttpClient($"wss://zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com/graphql?header={header}&payload=e30=", new NewtonsoftJsonSerializer());
-        graphQLClient.Options.UseWebSocketForQueriesAndMutations = true;
-        graphQLClient.Options.WebSocketEndPoint = new Uri($"wss://zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com/graphql?header={header}&payload=e30=");
+        var graphQLClient = new GraphQLHttpClient($"wss://{wdomain}/graphql?header={header}&payload=e30=", new NewtonsoftJsonSerializer());
 
         await graphQLClient.InitializeWebsocketConnection();
 
         Debug.Log("Initialized a web scoket connection.");
 
-        var request = new GraphQLRequest
+        var query = new GraphQLRequest
         {
             Query = @"
             subscription MySubscription {
@@ -87,18 +92,16 @@ public class HelloWorldButton : MonoBehaviour
             }",
         };
 
-        var request2 = new GraphQLRequest
+        var request = new GraphQLRequest
         {
-            ["data"] = JsonConvert.SerializeObject(request),
-            ["extensions"] = new {
-                authorization = header,
+            ["data"] = JsonConvert.SerializeObject(query),
+            ["extensions"] = new
+            {
+                authorization = headerStr,
             }
         };
 
-        var subscriptionStream = graphQLClient.CreateSubscriptionStream<SubscriptionResponse>(request2, ex =>
-        {
-            Debug.Log(ex);
-        });
+        var subscriptionStream = graphQLClient.CreateSubscriptionStream<SubscriptionResponse>(request, ex => { Debug.Log(ex); });
         _subscription = subscriptionStream.Subscribe(
             response => Debug.Log(response),
             exception => Debug.Log(exception),
