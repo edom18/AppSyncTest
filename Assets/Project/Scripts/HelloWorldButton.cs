@@ -9,7 +9,7 @@ using GraphQL.Client.Serializer.Newtonsoft;
 public class HelloWorldButton : MonoBehaviour
 {
     private const string API_URL = "https://zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com/graphql";
-    private const string WSS_API_URL = "wss://zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com/graphql";
+    private const string WSS_API_URL = "wss://zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com/graphql";
     private const string API_KEY = "da2-jdorukduzzdbbgrfubngjzi24a";
 
     public class ResultType
@@ -65,10 +65,12 @@ public class HelloWorldButton : MonoBehaviour
 
     public async void OnClick2()
     {
-        // var graphQLClient = new GraphQLHttpClient(API_URL, new NewtonsoftJsonSerializer());
         var headerStr = @" { ""host"": ""zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com"", ""x-api-key"": ""da2-jdorukduzzdbbgrfubngjzi24a"" }";
         var header = Convert.ToBase64String(Encoding.UTF8.GetBytes(headerStr));
-        var graphQLClient = new GraphQLHttpClient($"{WSS_API_URL}?header={header}&payload=e30=", new NewtonsoftJsonSerializer());
+        // var graphQLClient = new GraphQLHttpClient($"https://zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com/graphql?header={header}&payload=e30=", new NewtonsoftJsonSerializer());
+        var graphQLClient = new GraphQLHttpClient($"https://zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com/graphql?header={header}&payload=e30=", new NewtonsoftJsonSerializer());
+        // graphQLClient.HttpClient.DefaultRequestHeaders.Add("host", "zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com");
+        // graphQLClient.HttpClient.DefaultRequestHeaders.Add("x-api-key", API_KEY);
         // graphQLClient.Options.WebSocketEndPoint = new Uri($"{WSS_API_URL}?header={header}&payload=e30=");
         // graphQLClient.HttpClient.DefaultRequestHeaders.Add("x-api-key", API_KEY);
 
@@ -83,7 +85,10 @@ public class HelloWorldButton : MonoBehaviour
             }",
         };
 
-        var subscriptionStream = graphQLClient.CreateSubscriptionStream<SubscriptionResponse>(request);
+        var subscriptionStream = graphQLClient.CreateSubscriptionStream<SubscriptionResponse>(request, ex =>
+        {
+            Debug.Log(ex);
+        });
         _subscription = subscriptionStream.Subscribe(
             response => Debug.Log(response),
             exception => Debug.Log(exception),
