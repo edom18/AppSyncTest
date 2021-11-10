@@ -21,25 +21,41 @@ public class GraphQLHelloWorld : MonoBehaviour
     [SerializeField] private TMP_InputField _mutationInputField;
     [SerializeField] private TMP_InputField _subscriptionInputField;
         
-    public class ResultType
+    public class EventType
     {
+        public string id { get; set; }
         public string name { get; set; }
-        public int age { get; set; }
+        public string where { get; set; }
+        public string when { get; set; }
+        public string description { get; set; }
+    }
+
+    public class CommentType
+    {
+        public string eventId { get; set; }
+        public string commentId { get; set; }
+        public string content { get; set; }
+        public string createdAt { get; set; }
     }
 
     public class QueryResponse
     {
-        public ResultType getHoge { get; set; }
+        public EventType getEvent { get; set; }
     }
 
-    public class MutationResponse
+    public class CreateMutationResponse
     {
-        public ResultType createHoge { get; set; }
+        public EventType createEvent { get; set; }
+    }
+
+    public class CreateCommentResponse
+    {
+        public CommentType commentOnEvent { get; set; }
     }
 
     public class SubscriptionResponse
     {
-        public ResultType subscribeToHoge { get; set; }
+        public CommentType subscribeToEventComments { get; set; }
     }
 
     private void OnDestroy()
@@ -91,11 +107,9 @@ public class GraphQLHelloWorld : MonoBehaviour
             Query = _queryInputField.text,
         };
 
-        Debug.Log($"Query is {query.Query}");
-
         var response = await graphQLClient.SendQueryAsync<QueryResponse>(query, CancellationToken.None);
 
-        Debug.Log(response.Data.getHoge.name + ":" + response.Data.getHoge.age);
+        Debug.Log($"[Query] {JsonConvert.SerializeObject(response.Data)}");
     }
 
     public async void OnClickMutation()
@@ -108,9 +122,9 @@ public class GraphQLHelloWorld : MonoBehaviour
             Query = _mutationInputField.text,
         };
 
-        var response = await graphQLClient.SendQueryAsync<MutationResponse>(request, CancellationToken.None);
+        var response = await graphQLClient.SendQueryAsync<CreateCommentResponse>(request, CancellationToken.None);
 
-        Debug.Log(response.Data.createHoge.age);
+        Debug.Log($"[Mutation] {JsonConvert.SerializeObject(response.Data)}");
     }
 
     public async void OnClickSubscription()
@@ -150,7 +164,7 @@ public class GraphQLHelloWorld : MonoBehaviour
 
         var subscriptionStream = graphQLClient.CreateSubscriptionStream<SubscriptionResponse>(request, ex => { Debug.Log(ex); });
         _subscription = subscriptionStream.Subscribe(
-            response => Debug.Log(response.Data.subscribeToHoge.name),
+            response => Debug.Log($"[Subscription] {JsonConvert.SerializeObject(response.Data)}"),
             exception => Debug.Log(exception),
             () => Debug.Log("Completed."));
     }

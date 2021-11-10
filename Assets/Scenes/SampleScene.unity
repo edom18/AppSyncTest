@@ -227,8 +227,9 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: "mutation MyMutation {\r\n    createHoge(age: 10, name: \"\") {\r\n       
-    name\r\n        age\r\n    }\r\n}\r"
+  m_Text: "mutation MyMutation {\r\n  commentOnEvent(content: \"hogehoge\", createdAt:
+    \"2021/11/10\", eventId: \"c49ceb83-17f5-43b3-a511-98c3721841d2\") {\r\n    commentId\r\n   
+    content\r\n    createdAt\r\n    eventId\r\n  }\r\n}\r\n"
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -764,8 +765,8 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: "subscription MySubscription {\r\n  subscribeToHoge {\r\n    name\r\n   
-    age\r\n  }\r\n}\n"
+  m_Text: "subscription MySubscription {\r\n  subscribeToEventComments(eventId: \"c49ceb83-17f5-43b3-a511-98c3721841d2\")
+    {\r\n    commentId\r\n    content\r\n    createdAt\r\n    eventId\r\n  }\r\n}"
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -939,8 +940,8 @@ MonoBehaviour:
   m_CaretColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   m_CustomCaretColor: 0
   m_SelectionColor: {r: 0.65882355, g: 0.80784315, b: 1, a: 0.7529412}
-  m_Text: "query MyQuery {\r\n    getHoge {\r\n        name\r\n        age\r\n   
-    }\r\n}\r\n"
+  m_Text: "query GetEvent {\r\n  getEvent(id: \"c49ceb83-17f5-43b3-a511-98c3721841d2\")
+    {\r\n    id\r\n    name\r\n    when\r\n    where\r\n    description\r\n  }\r\n}"
   m_CaretBlinkRate: 0.85
   m_CaretWidth: 1
   m_ReadOnly: 0
@@ -1139,8 +1140,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "subscription MySubscription {\r\n  subscribeToHoge {\r\n    name\r\n   
-    age\r\n  }\r\n}\n\u200B"
+  m_text: "subscription MySubscription {\r\n  subscribeToEventComments(eventId: \"c49ceb83-17f5-43b3-a511-98c3721841d2\")
+    {\r\n    commentId\r\n    content\r\n    createdAt\r\n    eventId\r\n  }\r\n}\u200B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1749,8 +1750,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "mutation MyMutation {\r\n    createHoge(age: 10, name: \"\") {\r\n       
-    name\r\n        age\r\n    }\r\n}\r\u200B"
+  m_text: "mutation MyMutation {\r\n  commentOnEvent(content: \"hogehoge\", createdAt:
+    \"2021/11/10\", eventId: \"c49ceb83-17f5-43b3-a511-98c3721841d2\") {\r\n    commentId\r\n   
+    content\r\n    createdAt\r\n    eventId\r\n  }\r\n}\r\n\u200B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2116,9 +2118,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cef76ebb2f92b1a4a8320b38cf845195, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _host: zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com
-  _realtimeHost: zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com
-  _apiKey: da2-jdorukduzzdbbgrfubngjzi24a
+  _host: fpvzdxtqmvey3n5fuhumkfs45u.appsync-api.us-east-2.amazonaws.com
+  _realtimeHost: fpvzdxtqmvey3n5fuhumkfs45u.appsync-realtime-api.us-east-2.amazonaws.com
+  _apiKey: da2-3opmwtujrrha3o4vakhze65xmm
   _queryInputField: {fileID: 634170394}
   _mutationInputField: {fileID: 6442028}
   _subscriptionInputField: {fileID: 547497695}
@@ -2593,8 +2595,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "query MyQuery {\r\n    getHoge {\r\n        name\r\n        age\r\n   
-    }\r\n}\r\n\u200B"
+  m_text: "query GetEvent {\r\n  getEvent(id: \"c49ceb83-17f5-43b3-a511-98c3721841d2\")
+    {\r\n    id\r\n    name\r\n    when\r\n    where\r\n    description\r\n  }\r\n}\u200B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
