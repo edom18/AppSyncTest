@@ -9,13 +9,18 @@ using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using Newtonsoft.Json;
 using GraphQL.Client.Abstractions;
+using TMPro;
 
 public class GraphQLHelloWorld : MonoBehaviour
 {
-    private const string HOST = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com";
-    private const string REALTIME_HOST = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com";
-    private const string API_KEY = "da2-jdorukduzzdbbgrfubngjzi24a";
+    [SerializeField] private string _host = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com";
+    [SerializeField] private string _realtimeHost = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com";
+    [SerializeField] private string _apiKey = "da2-jdorukduzzdbbgrfubngjzi24a";
 
+    [SerializeField] private TMP_InputField _queryInputField;
+    [SerializeField] private TMP_InputField _mutationInputField;
+    [SerializeField] private TMP_InputField _subscriptionInputField;
+        
     public class ResultType
     {
         public string name { get; set; }
@@ -78,18 +83,12 @@ public class GraphQLHelloWorld : MonoBehaviour
 
     public async void OnClickQuery()
     {
-        GraphQLHttpClient graphQLClient = new GraphQLHttpClient($"https://{HOST}/graphql", new NewtonsoftJsonSerializer());
-        graphQLClient.HttpClient.DefaultRequestHeaders.Add("x-api-key", API_KEY);
+        GraphQLHttpClient graphQLClient = new GraphQLHttpClient($"https://{_host}/graphql", new NewtonsoftJsonSerializer());
+        graphQLClient.HttpClient.DefaultRequestHeaders.Add("x-api-key", _apiKey);
 
         GraphQLRequest query = new GraphQLRequest
         {
-            Query = @"
-            query MyQuery {
-                getHoge {
-                    name
-                    age
-                }
-            }",
+            Query = _queryInputField.text,
         };
 
         Debug.Log($"Query is {query.Query}");
@@ -101,19 +100,12 @@ public class GraphQLHelloWorld : MonoBehaviour
 
     public async void OnClickMutation()
     {
-        GraphQLHttpClient graphQLClient = new GraphQLHttpClient($"https://{HOST}/graphql", new NewtonsoftJsonSerializer());
-        graphQLClient.HttpClient.DefaultRequestHeaders.Add("x-api-key", API_KEY);
+        GraphQLHttpClient graphQLClient = new GraphQLHttpClient($"https://{_host}/graphql", new NewtonsoftJsonSerializer());
+        graphQLClient.HttpClient.DefaultRequestHeaders.Add("x-api-key", _apiKey);
 
         GraphQLRequest request = new GraphQLRequest
         {
-            Query = @"
-                mutation MyMutation {
-                    createHoge(age: 10, name: """") {
-                        name
-                        age
-                    }
-                }
-            ",
+            Query = _mutationInputField.text,
         };
 
         var response = await graphQLClient.SendQueryAsync<MutationResponse>(request, CancellationToken.None);
@@ -123,20 +115,20 @@ public class GraphQLHelloWorld : MonoBehaviour
 
     public async void OnClickSubscription()
     {
-        GraphQLHttpClient graphQLClient = new GraphQLHttpClient($"https://{HOST}/graphql", new NewtonsoftJsonSerializer());
+        GraphQLHttpClient graphQLClient = new GraphQLHttpClient($"https://{_host}/graphql", new NewtonsoftJsonSerializer());
 
         AppSyncHeader appSyncHeader = new AppSyncHeader
         {
-            Host = HOST,
-            ApiKey = API_KEY,
+            Host = _host,
+            ApiKey = _apiKey,
         };
 
         string header = appSyncHeader.ToBase64String();
 
-        graphQLClient.Options.WebSocketEndPoint = new Uri($"wss://{REALTIME_HOST}/graphql?header={header}&payload=e30=");
+        graphQLClient.Options.WebSocketEndPoint = new Uri($"wss://{_realtimeHost}/graphql?header={header}&payload=e30=");
         graphQLClient.Options.PreprocessRequest = (req, client) =>
         {
-            GraphQLHttpRequest result = new AuthorizedAppSyncHttpRequest(req, API_KEY)
+            GraphQLHttpRequest result = new AuthorizedAppSyncHttpRequest(req, _apiKey)
             {
                 ["data"] = JsonConvert.SerializeObject(req),
                 ["extensions"] = new
@@ -153,13 +145,7 @@ public class GraphQLHelloWorld : MonoBehaviour
 
         GraphQLRequest request = new GraphQLRequest
         {
-            Query = @"
-            subscription MySubscription {
-              subscribeToHoge {
-                name
-                age
-              }
-            }",
+            Query = _subscriptionInputField.text,
         };
 
         var subscriptionStream = graphQLClient.CreateSubscriptionStream<SubscriptionResponse>(request, ex => { Debug.Log(ex); });
