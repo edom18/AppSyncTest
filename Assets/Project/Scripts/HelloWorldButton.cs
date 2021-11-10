@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using GraphQL;
@@ -7,6 +8,7 @@ using UnityEngine;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using Newtonsoft.Json;
+using GraphQL.Client.Abstractions;
 
 public class HelloWorldButton : MonoBehaviour
 {
@@ -40,6 +42,38 @@ public class HelloWorldButton : MonoBehaviour
         _subscription?.Dispose();
     }
 
+    private class AppSyncHeader
+    {
+        [JsonProperty("host")] public string Host { get; set; }
+
+        [JsonProperty("x-api-key")] public string ApiKey { get; set; }
+
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(this);
+        }
+
+        public string ToBase64String()
+        {
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(ToJson()));
+        }
+    }
+
+    public class AuthorizedAppSyncHttpRequest : GraphQLHttpRequest
+    {
+        private readonly string _authorization;
+
+        public AuthorizedAppSyncHttpRequest(GraphQLRequest request, string authorization) : base(request)
+            => _authorization = authorization;
+
+        public override HttpRequestMessage ToHttpRequestMessage(GraphQLHttpClientOptions options, IGraphQLJsonSerializer serializer)
+        {
+            HttpRequestMessage result = base.ToHttpRequestMessage(options, serializer);
+            result.Headers.Add("X-Api-Key", _authorization);
+            return result;
+        }
+    }
+
     private IDisposable _subscription;
 
     public async void OnClick()
@@ -67,15 +101,18 @@ public class HelloWorldButton : MonoBehaviour
 
     public async void OnClick2()
     {
-        var domain = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com";
-        var wdomain = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com";
-        var headerStr = JsonConvert.SerializeObject(new Dictionary<string, object>
+        string host = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com";
+        string whost = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com";
+
+        AppSyncHeader appSyncHeader = new AppSyncHeader
         {
-            ["host"] = domain,
-            ["x-api-key"] = API_KEY,
-        });
-        var header = Convert.ToBase64String(Encoding.UTF8.GetBytes(headerStr));
-        var graphQLClient = new GraphQLHttpClient($"wss://{wdomain}/graphql?header={header}&payload=e30=", new NewtonsoftJsonSerializer());
+            Host = host,
+            ApiKey = API_KEY,
+        };
+
+        string header = appSyncHeader.ToBase64String();
+        
+        var graphQLClient = new GraphQLHttpClient($"wss://{whost}/graphql?header={header}&payload=e30=", new NewtonsoftJsonSerializer());
 
         await graphQLClient.InitializeWebsocketConnection();
 
@@ -92,12 +129,14 @@ public class HelloWorldButton : MonoBehaviour
             }",
         };
 
+        // var request = new AuthorizedAppSyncHttpRequest(query, API_KEY);
+
         var request = new GraphQLRequest
         {
             ["data"] = JsonConvert.SerializeObject(query),
             ["extensions"] = new
             {
-                authorization = headerStr,
+                authorization = appSyncHeader.ToJson(),
             }
         };
 
