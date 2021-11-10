@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using GraphQL;
 using UnityEngine;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using Newtonsoft.Json;
 using GraphQL.Client.Abstractions;
+using UnityEditor.PackageManager.Requests;
 
 public class HelloWorldButton : MonoBehaviour
 {
@@ -104,6 +106,8 @@ public class HelloWorldButton : MonoBehaviour
         string host = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com";
         string whost = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com";
 
+        var graphQLClient = new GraphQLHttpClient($"https://{host}/graphql", new NewtonsoftJsonSerializer());
+
         AppSyncHeader appSyncHeader = new AppSyncHeader
         {
             Host = host,
@@ -111,14 +115,26 @@ public class HelloWorldButton : MonoBehaviour
         };
 
         string header = appSyncHeader.ToBase64String();
-        
-        var graphQLClient = new GraphQLHttpClient($"wss://{whost}/graphql?header={header}&payload=e30=", new NewtonsoftJsonSerializer());
+
+        graphQLClient.Options.WebSocketEndPoint = new Uri($"wss://{whost}/graphql?header={header}&payload=e30=");
+        graphQLClient.Options.PreprocessRequest = (req, client) =>
+        {
+            GraphQLHttpRequest result = new AuthorizedAppSyncHttpRequest(req, API_KEY)
+            {
+                ["data"] = JsonConvert.SerializeObject(req),
+                ["extensions"] = new
+                {
+                    authorization = appSyncHeader,
+                }
+            };
+            return Task.FromResult(result);
+        };
 
         await graphQLClient.InitializeWebsocketConnection();
 
         Debug.Log("Initialized a web scoket connection.");
 
-        var query = new GraphQLRequest
+        GraphQLRequest request = new GraphQLRequest
         {
             Query = @"
             subscription MySubscription {
@@ -129,20 +145,9 @@ public class HelloWorldButton : MonoBehaviour
             }",
         };
 
-        // var request = new AuthorizedAppSyncHttpRequest(query, API_KEY);
-
-        var request = new GraphQLRequest
-        {
-            ["data"] = JsonConvert.SerializeObject(query),
-            ["extensions"] = new
-            {
-                authorization = appSyncHeader.ToJson(),
-            }
-        };
-
         var subscriptionStream = graphQLClient.CreateSubscriptionStream<SubscriptionResponse>(request, ex => { Debug.Log(ex); });
         _subscription = subscriptionStream.Subscribe(
-            response => Debug.Log(response),
+            response => Debug.Log(response.Data.subscribeToHoge.name),
             exception => Debug.Log(exception),
             () => Debug.Log("Completed."));
     }
