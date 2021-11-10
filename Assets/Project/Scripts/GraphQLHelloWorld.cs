@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -10,12 +9,11 @@ using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using Newtonsoft.Json;
 using GraphQL.Client.Abstractions;
-using UnityEditor.PackageManager.Requests;
 
-public class HelloWorldButton : MonoBehaviour
+public class GraphQLHelloWorld : MonoBehaviour
 {
-    private const string API_URL = "https://zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com/graphql";
-    private const string WSS_API_URL = "wss://zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com/graphql";
+    private const string HOST = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com";
+    private const string REALTIME_HOST = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com";
     private const string API_KEY = "da2-jdorukduzzdbbgrfubngjzi24a";
 
     public class ResultType
@@ -78,12 +76,12 @@ public class HelloWorldButton : MonoBehaviour
 
     private IDisposable _subscription;
 
-    public async void OnClick()
+    public async void OnClickQuery()
     {
-        var graphQLClient = new GraphQLHttpClient(API_URL, new NewtonsoftJsonSerializer());
+        GraphQLHttpClient graphQLClient = new GraphQLHttpClient($"https://{HOST}/graphql", new NewtonsoftJsonSerializer());
         graphQLClient.HttpClient.DefaultRequestHeaders.Add("x-api-key", API_KEY);
 
-        var query = new GraphQLRequest
+        GraphQLRequest query = new GraphQLRequest
         {
             Query = @"
             query MyQuery {
@@ -101,22 +99,41 @@ public class HelloWorldButton : MonoBehaviour
         Debug.Log(response.Data.getHoge.name + ":" + response.Data.getHoge.age);
     }
 
-    public async void OnClick2()
+    public async void OnClickMutation()
     {
-        string host = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com";
-        string whost = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com";
+        GraphQLHttpClient graphQLClient = new GraphQLHttpClient($"https://{HOST}/graphql", new NewtonsoftJsonSerializer());
+        graphQLClient.HttpClient.DefaultRequestHeaders.Add("x-api-key", API_KEY);
 
-        var graphQLClient = new GraphQLHttpClient($"https://{host}/graphql", new NewtonsoftJsonSerializer());
+        GraphQLRequest request = new GraphQLRequest
+        {
+            Query = @"
+                mutation MyMutation {
+                    createHoge(age: 10, name: """") {
+                        name
+                        age
+                    }
+                }
+            ",
+        };
+
+        var response = await graphQLClient.SendQueryAsync<MutationResponse>(request, CancellationToken.None);
+
+        Debug.Log(response.Data.createHoge.age);
+    }
+
+    public async void OnClickSubscription()
+    {
+        GraphQLHttpClient graphQLClient = new GraphQLHttpClient($"https://{HOST}/graphql", new NewtonsoftJsonSerializer());
 
         AppSyncHeader appSyncHeader = new AppSyncHeader
         {
-            Host = host,
+            Host = HOST,
             ApiKey = API_KEY,
         };
 
         string header = appSyncHeader.ToBase64String();
 
-        graphQLClient.Options.WebSocketEndPoint = new Uri($"wss://{whost}/graphql?header={header}&payload=e30=");
+        graphQLClient.Options.WebSocketEndPoint = new Uri($"wss://{REALTIME_HOST}/graphql?header={header}&payload=e30=");
         graphQLClient.Options.PreprocessRequest = (req, client) =>
         {
             GraphQLHttpRequest result = new AuthorizedAppSyncHttpRequest(req, API_KEY)
@@ -150,27 +167,5 @@ public class HelloWorldButton : MonoBehaviour
             response => Debug.Log(response.Data.subscribeToHoge.name),
             exception => Debug.Log(exception),
             () => Debug.Log("Completed."));
-    }
-
-    public async void OnClick3()
-    {
-        var graphQLClient = new GraphQLHttpClient(API_URL, new NewtonsoftJsonSerializer());
-        graphQLClient.HttpClient.DefaultRequestHeaders.Add("x-api-key", API_KEY);
-
-        var request = new GraphQLRequest
-        {
-            Query = @"
-                mutation MyMutation {
-                    createHoge(age: 10, name: """") {
-                        name
-                        age
-                    }
-                }
-            ",
-        };
-
-        var response = await graphQLClient.SendQueryAsync<MutationResponse>(request, CancellationToken.None);
-
-        Debug.Log(response.Data.createHoge.age);
     }
 }
