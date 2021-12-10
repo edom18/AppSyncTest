@@ -13,9 +13,9 @@ using TMPro;
 
 public class GraphQLHelloWorld : MonoBehaviour
 {
-    [SerializeField] private string _host = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-api.us-east-2.amazonaws.com";
-    [SerializeField] private string _realtimeHost = "zrzxcskrlfcsxmvuusj2knj6iu.appsync-realtime-api.us-east-2.amazonaws.com";
-    [SerializeField] private string _apiKey = "da2-jdorukduzzdbbgrfubngjzi24a";
+    [SerializeField] private string _host = "";
+    [SerializeField] private string _realtimeHost = "";
+    [SerializeField] private string _apiKey = "";
 
     [SerializeField] private TMP_InputField _queryInputField;
     [SerializeField] private TMP_InputField _mutationInputField;
